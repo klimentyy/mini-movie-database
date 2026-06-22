@@ -8,7 +8,8 @@ class Actor(models.Model):
         return self.name
 
 class Movie(models.Model):
-    title = models.CharField(max_length=255)
+    cz_title = models.CharField(max_length=255)
+    original_title = models.CharField(max_length=255, null=True, blank=True)
     actors = models.ManyToManyField(Actor, related_name="movies")
 
     def __str__(self):
