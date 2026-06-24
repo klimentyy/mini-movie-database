@@ -10,8 +10,9 @@
     <p><a href="{% url 'search' %}">&larr; Zpět na vyhledávání</a></p>
     
     <h1>{{ movie.cz_title }}</h1>
+    <h3>{{ movie.en_title }}</h3>
 
-    <h2>Herci (TOP 300)</h2>
+    <h2>Herci</h2>
     <ul>
         {% for actor in movie.actors.all %}
             <li><a href="{% url 'actor_detail' actor.id %}">{{ actor.name }}</a></li>

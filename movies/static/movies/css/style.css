@@ -25,7 +25,7 @@ h1 {
     font-size: 24px;
     font-weight: 500;
     letter-spacing: -0.01em;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
     color: var(--ds-text);
 }
 
@@ -39,7 +39,14 @@ h2 {
     border-bottom: 2px solid var(--ds-border);
 }
 
-/* Jira-style Search Input */
+h3 {
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--ds-text-subsidiary);
+    margin-top: 0;
+    margin-bottom: 18px;
+}
+
 .search-box {
     width: 100%;
     max-width: 500px;
@@ -91,7 +98,6 @@ li:last-child {
     border-bottom: none;
 }
 
-/* Links mirroring Jira look */
 a {
     color: var(--ds-link);
     text-decoration: none;
