@@ -1,0 +1,23 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ movie.cz_title }}</title>
+    <link rel="stylesheet" href="{% static 'movies/css/style.css' %}">
+</head>
+<body>
+    <p><a href="{% url 'search' %}">&larr; Zpět na vyhledávání</a></p>
+    
+    <h1>{{ movie.cz_title }}</h1>
+
+    <h2>Herci (TOP 300)</h2>
+    <ul>
+        {% for actor in movie.actors.all %}
+            <li><a href="{% url 'actor_detail' actor.id %}">{{ actor.name }}</a></li>
+        {% empty %}
+            <li class="status-msg">Tento film nemá v databázi žádné herce.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ actor.name }}</title>
+    <link rel="stylesheet" href="{% static 'movies/css/style.css' %}">
+</head>
+<body>
+    <p><a href="{% url 'search' %}">&larr; Zpět na vyhledávání</a></p>
+    
+    <h1>{{ actor.name }}</h1>
+
+    <h2>Filmy (TOP 300)</h2>
+    <ul>
+        {% for movie in actor.movies.all %}
+            <li><a href="{% url 'movie_detail' movie.id %}">{{ movie.cz_title }}</a></li>
+        {% empty %}
+            <li class="status-msg">Tento herec nemá v databázi žádné top filmy.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
