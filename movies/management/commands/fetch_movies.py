@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
 
 from movies.models import Actor, Movie
-from httpx import Client
+from curl_cffi import requests
 
 # Unfortunately, CSFD has bot protection. So this script is rather theoretical and may not work in practice.
 
@@ -23,7 +23,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.NOTICE("Started paginated CSFD data extraction."))
 
         # Set up an HTTP client to bypass bot protection
-        with Client(headers=self.HEADERS, http2=True, timeout=15.0) as client:
+        with requests.Session(impersonate="chrome124", timeout=15.0) as client:
             movie_links = []
             offsets = [1, 100, 200]
 
@@ -63,11 +63,11 @@ class Command(BaseCommand):
 
                 
 
-    def _fetch_html(self, client: Client, url: str) -> Optional[str]:
+    def _fetch_html(self, client: requests.Session, url: str) -> Optional[str]:
         """Safely performs an HTTP GET request"""
 
         try:
-            response = client.get(url)
+            response = client.get(url, headers=self.HEADERS)
             if response.status_code == 200:
                 return response.text
             self.stdout.write(
@@ -100,9 +100,11 @@ class Command(BaseCommand):
 
     def __extract_cz_title(self, soup: BeautifulSoup) -> Optional[str]:
         """Extracts the Czech title from the movie page."""
-        title_tag = soup.find("h1", class_="film-header-name")
-        if title_tag:
-            return title_tag.get_text(strip=True)
+        container = soup.find("div", class_="film-header-name")
+        if container:
+            title_tag = container.find("h1")
+            if title_tag:
+                return title_tag.get_text(strip=True)
         return None
 
     def __extract_en_title(self, soup: BeautifulSoup) -> Optional[str]:
@@ -123,18 +125,24 @@ class Command(BaseCommand):
         """Collects clean strings representing actor identities."""
         actors_names = []
 
-        creators_div = soup.find_all("div", class_="creators")
+        creators_section = soup.find("div", id="creators")
 
-        for div in creators_div:
+        if not creators_section:
+            return actors_names
+
+        for div in creators_section.find_all("div", recursive=False):
             header = div.find("h4")
 
-            if header and "Hrají" in header.get_text(strip=True):
+            if header and "Hrají" in header.get_text():
                 actor_links = div.find_all("a")
+                
                 for link in actor_links:
                     name = link.get_text(strip=True)
                     if name and name != "více":
                         actors_names.append(name)
+                break  # Stop after the first relevant "Hrají" section
         return actors_names
+
     
     def _save_to_database(self, movie_data: Dict[str, Optional[str]]) -> None:
         """Saves the parsed movie data to the database."""

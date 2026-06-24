@@ -6,7 +6,7 @@ name = "pypi"
 [packages]
 django = "*"
 beautifulsoup4 = "*"
-httpx = {extras = ["http2"], version = "*"}
+curl-cffi = "*"
 
 [dev-packages]
 pylint = "*"
