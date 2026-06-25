@@ -66,8 +66,6 @@ TEMPLATES = [
     },
 ]
 
-STATIC_URL = "static/"
-
 WSGI_APPLICATION = "mini_movie_database.wsgi.application"
 
 
