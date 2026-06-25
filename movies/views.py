@@ -39,13 +39,13 @@ def search_api_view(request):
             clean_cz=RemoveAccent(F("cz_title")),
             clean_en=RemoveAccent(F("en_title")),
         )
-        .filter(Q(clean_cz__contains=clean_query) | Q(clean_en__contains=clean_query))
+        .filter(Q(clean_cz__icontains=clean_query) | Q(clean_en__icontains=clean_query))
         .distinct()
         .values("id", "cz_title", "en_title")
     )
     actors = (
         Actor.objects.annotate(normalized_name=RemoveAccent(F("name")))
-        .filter(normalized_name__contains=clean_query)
+        .filter(normalized_name__icontains=clean_query)
         .distinct()
         .values("id", "name")
     )
