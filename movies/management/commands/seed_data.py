@@ -10,7 +10,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         app_config = apps.get_app_config("movies")
-        json_file_path = os.path.join(app_config.path, "management", "data", "movies_data.json")
+        json_file_path = os.path.join(
+            app_config.path, "management", "data", "movies_data.json"
+        )
 
         if not os.path.exists(json_file_path):
             self.stdout.write(
@@ -32,8 +34,7 @@ class Command(BaseCommand):
                 continue
 
             movie_obj, _ = Movie.objects.update_or_create(
-                cz_title=cz_title,
-                defaults={"en_title": en_title}
+                cz_title=cz_title, defaults={"en_title": en_title}
             )
 
             actor_objects = [
@@ -42,7 +43,11 @@ class Command(BaseCommand):
             movie_obj.actors.set(actor_objects)
 
             self.stdout.write(
-                self.style.SUCCESS(f"[{index}/{len(movie_dataset)}] Imported: {cz_title}")
+                self.style.SUCCESS(
+                    f"[{index}/{len(movie_dataset)}] Imported: {cz_title}"
+                )
             )
 
-        self.stdout.write(self.style.SUCCESS("Database population successfully completed!"))
+        self.stdout.write(
+            self.style.SUCCESS("Database population successfully completed!")
+        )

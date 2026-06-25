@@ -69,28 +69,28 @@ class MovieSearchTestCase(TestCase):
 
     def test_whitespace_tolerance_handling(self):
         """Ensures sloppy user whitespace inputs are cleanly handled without shifting results."""
-        url = reverse('search_api')
-        response = self.client.get(url, {'q': '   matrix   '})
-        
+        url = reverse("search_api")
+        response = self.client.get(url, {"q": "   matrix   "})
+
         data = response.json()
-        self.assertEqual(len(data['results']['movies']), 1)
+        self.assertEqual(len(data["results"]["movies"]), 1)
 
     def test_simultaneous_movie_and_actor_matching(self):
         """Ensures queries matching both structural types populate both response nodes correctly."""
         Actor.objects.create(name="Kim Matrix")
-        
-        url = reverse('search_api')
-        response = self.client.get(url, {'q': 'Matrix'})
+
+        url = reverse("search_api")
+        response = self.client.get(url, {"q": "Matrix"})
         data = response.json()
-        
-        self.assertEqual(len(data['results']['movies']), 1)
-        self.assertEqual(len(data['results']['actors']), 1)
+
+        self.assertEqual(len(data["results"]["movies"]), 1)
+        self.assertEqual(len(data["results"]["actors"]), 1)
 
     def test_invalid_details_raise_404_errors(self):
         """Verifies that missing object primary keys trigger proper 404 responses."""
-        movie_url = reverse('movie_detail', kwargs={'pk': 99999})
-        actor_url = reverse('actor_detail', kwargs={'pk': 99999})
-        
+        movie_url = reverse("movie_detail", kwargs={"pk": 99999})
+        actor_url = reverse("actor_detail", kwargs={"pk": 99999})
+
         self.assertEqual(self.client.get(movie_url).status_code, 404)
         self.assertEqual(self.client.get(actor_url).status_code, 404)
 
@@ -98,7 +98,7 @@ class MovieSearchTestCase(TestCase):
         """Ensures that query inputs consisting solely of spaces do not execute DB queries."""
         url = reverse("search_api")
         response = self.client.get(url, {"q": "     "})
-        
+
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data["results"]["movies"], [])
@@ -108,7 +108,7 @@ class MovieSearchTestCase(TestCase):
         """Ensures query matching handles special character separators or numbers safely."""
         url = reverse("search_api")
         response = self.client.get(url, {"q": "Matrix 2!"})
-        
+
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data["results"]["movies"], [])

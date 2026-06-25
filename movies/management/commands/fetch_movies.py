@@ -7,7 +7,6 @@ from django.core.management.base import BaseCommand
 from movies.models import Actor, Movie
 from curl_cffi import requests
 
-# Unfortunately, CSFD has bot protection. So this script is rather theoretical and may not work in practice.
 
 class Command(BaseCommand):
     help = "Scrapes the top 300 movies from CSDF and fills the local database."
@@ -50,18 +49,26 @@ class Command(BaseCommand):
                 url = self.BASE_URL + link
                 html_content = self._fetch_html(client, url)
                 if not html_content:
-                    self.stdout.write(self.style.WARNING(f"Failed to fetch movie details for: {url}"))
+                    self.stdout.write(
+                        self.style.WARNING(f"Failed to fetch movie details for: {url}")
+                    )
                     continue
-                
+
                 movie_data = self._parse_movie_page(html_content)
                 self._save_to_database(movie_data)
 
-                self.stdout.write(self.style.NOTICE(f"Processed movie {index}/{len(movie_links)}: {movie_data.get('cz_title')}"))
+                self.stdout.write(
+                    self.style.NOTICE(
+                        f"Processed movie {index}/{len(movie_links)}: {movie_data.get('cz_title')}"
+                    )
+                )
                 time.sleep(1.2)  # Throttling movie pages
-            
-            self.stdout.write(self.style.SUCCESS("Completed CSFD data extraction and database population."))
 
-                
+            self.stdout.write(
+                self.style.SUCCESS(
+                    "Completed CSFD data extraction and database population."
+                )
+            )
 
     def _fetch_html(self, client: requests.Session, url: str) -> Optional[str]:
         """Safely performs an HTTP GET request"""
@@ -71,7 +78,9 @@ class Command(BaseCommand):
             if response.status_code == 200:
                 return response.text
             self.stdout.write(
-                self.style.ERROR(f"Failed to fetch {url}. Status code: {response.status_code}")
+                self.style.ERROR(
+                    f"Failed to fetch {url}. Status code: {response.status_code}"
+                )
             )
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"Failed to fetch {url}: {e}"))
@@ -135,7 +144,7 @@ class Command(BaseCommand):
 
             if header and "Hrají" in header.get_text():
                 actor_links = div.find_all("a")
-                
+
                 for link in actor_links:
                     name = link.get_text(strip=True)
                     if name and name != "více":
@@ -143,7 +152,6 @@ class Command(BaseCommand):
                 break  # Stop after the first relevant "Hrají" section
         return actors_names
 
-    
     def _save_to_database(self, movie_data: Dict[str, Optional[str]]) -> None:
         """Saves the parsed movie data to the database."""
         cz_title = movie_data.get("cz_title")
@@ -156,8 +164,7 @@ class Command(BaseCommand):
 
         # Create or get the Movie instance
         movie, _ = Movie.objects.get_or_create(
-            cz_title=cz_title,
-            defaults={"en_title": en_title}
+            cz_title=cz_title, defaults={"en_title": en_title}
         )
 
         # Process actors
@@ -168,4 +175,3 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS(f"Saved movie: {movie} with {len(actors_names)} actors.")
         )
-        

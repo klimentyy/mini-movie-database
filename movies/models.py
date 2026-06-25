@@ -16,7 +16,8 @@ class Movie(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["cz_title", "en_title"], name="unique_movie_titles")
+                fields=["cz_title", "en_title"], name="unique_movie_titles"
+            )
         ]
 
     def __str__(self):
