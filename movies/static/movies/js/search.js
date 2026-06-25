@@ -10,8 +10,8 @@ searchInput.addEventListener('input', (e) => {
     clearTimeout(debounceTimer);
 
     if (query.length < 2) {
-        moviesList.innerHTML = '<li class="status-msg">Zadejte alespoň 2 znaky pro vyhledávání...</li>';
-        actorsList.innerHTML = '<li class="status-msg">Zadejte alespoň 2 znaky pro vyhledávání...</li>';
+        setStaticMessage(moviesList, 'Zadejte alespoň 2 znaky pro vyhledávání...');
+        setStaticMessage(actorsList, 'Zadejte alespoň 2 znaky pro vyhledávání...');
         return;
     }
 
@@ -20,9 +20,20 @@ searchInput.addEventListener('input', (e) => {
     }, 300);
 });
 
+function setStaticMessage(targetList, text, isError = false) {
+    targetList.innerHTML = '';
+    const li = document.createElement('li');
+    li.className = 'status-msg';
+    li.textContent = text;
+    if (isError) {
+        li.style.color = 'red';
+    }
+    targetList.appendChild(li);
+}
+
 function executeSearch(query) {
-    moviesList.innerHTML = '<li class="status-msg">Vyhledávání...</li>';
-    actorsList.innerHTML = '<li class="status-msg">Vyhledávání...</li>';
+    setStaticMessage(moviesList, 'Vyhledávání...');
+    setStaticMessage(actorsList, 'Vyhledávání...');
 
     fetch(`/api/search/?q=${encodeURIComponent(query)}`, {
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -31,30 +42,52 @@ function executeSearch(query) {
     .then(data => {
         const results = data.results;
         
+        moviesList.innerHTML = ''; 
         if (results.movies.length === 0) {
-            moviesList.innerHTML = '<li>Nenalezeny žádné filmy.</li>';
+            const noMoviesLi = document.createElement('li');
+            noMoviesLi.textContent = 'Nenalezeny žádné filmy.';
+            moviesList.appendChild(noMoviesLi);
         } else {
-            moviesList.innerHTML = results.movies.map(movie => `
-                <li>
-                    <a href="/movie/${movie.id}/">${movie.cz_title}</a> 
-                    ${movie.en_title ? `<small style="color:#777;">(${movie.en_title})</small>` : ''}
-                </li>
-            `).join('');
+            results.movies.forEach(movie => {
+                const li = document.createElement('li');
+                const link = document.createElement('a');
+                
+                link.href = `/movie/${movie.id}/`;
+                link.textContent = movie.cz_title;
+                li.appendChild(link);
+
+                if (movie.en_title) {
+                    const small = document.createElement('small');
+                    small.style.color = '#777';
+                    small.textContent = ` (${movie.en_title})`;
+                    li.appendChild(small);
+                }
+
+                moviesList.appendChild(li);
+            });
         }
 
+        actorsList.innerHTML = '';
         if (results.actors.length === 0) {
-            actorsList.innerHTML = '<li>Nenalezeny žádní herci.</li>';
+            const noActorsLi = document.createElement('li');
+            noActorsLi.textContent = 'Nenalezeny žádní herci.';
+            actorsList.appendChild(noActorsLi);
         } else {
-            actorsList.innerHTML = results.actors.map(actor => `
-                <li>
-                    <a href="/actor/${actor.id}/">${actor.name}</a>
-                </li>
-            `).join('');
+            results.actors.forEach(actor => {
+                const li = document.createElement('li');
+                const link = document.createElement('a');
+
+                link.href = `/actor/${actor.id}/`;
+                link.textContent = actor.name;
+                li.appendChild(link);
+
+                actorsList.appendChild(li);
+            });
         }
     })
     .catch(error => {
         console.error('Chyba:', error);
-        moviesList.innerHTML = '<li class="status-msg" style="color:red;">Chyba načítání dat.</li>';
-        actorsList.innerHTML = '<li class="status-msg" style="color:red;">Chyba načítání dat.</li>';
+        setStaticMessage(moviesList, 'Chyba načítání dat.', true);
+        setStaticMessage(actorsList, 'Chyba načítání dat.', true);
     });
 }
