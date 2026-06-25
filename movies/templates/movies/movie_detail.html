@@ -10,7 +10,9 @@
     <p><a href="{% url 'search' %}">&larr; Zpět na vyhledávání</a></p>
     
     <h1>{{ movie.cz_title }}</h1>
-    <h3>{{ movie.en_title }}</h3>
+    {% if movie.en_title %}
+        <h3>{{ movie.en_title }}</h3>
+    {% endif %}
 
     <h2>Herci</h2>
     <ul>
