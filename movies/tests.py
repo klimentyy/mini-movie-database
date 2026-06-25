@@ -94,3 +94,21 @@ class MovieSearchTestCase(TestCase):
         self.assertEqual(self.client.get(movie_url).status_code, 404)
         self.assertEqual(self.client.get(actor_url).status_code, 404)
 
+    def test_blank_or_whitespace_only_query_returns_empty(self):
+        """Ensures that query inputs consisting solely of spaces do not execute DB queries."""
+        url = reverse("search_api")
+        response = self.client.get(url, {"q": "     "})
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["results"]["movies"], [])
+        self.assertEqual(data["results"]["actors"], [])
+
+    def test_special_characters_handling(self):
+        """Ensures query matching handles special character separators or numbers safely."""
+        url = reverse("search_api")
+        response = self.client.get(url, {"q": "Matrix 2!"})
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["results"]["movies"], [])
