@@ -1,0 +1,28 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Django RUN",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                "runserver",
+                "--noreload",
+                "--nothreading"
+            ],
+            "django": true
+        },
+        {
+            "name": "Django TEST",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                "test",
+                "movies",
+            ],
+            "django": true
+        }
+    ]
+}

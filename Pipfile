@@ -5,8 +5,13 @@ name = "pypi"
 
 [packages]
 django = "*"
+beautifulsoup4 = "*"
+curl-cffi = "*"
+unidecode = "*"
 
 [dev-packages]
+pylint = "*"
+autopep8 = "*"
 
 [requires]
 python_version = "3.13"
