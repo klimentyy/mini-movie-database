@@ -29,12 +29,7 @@ def search_api_view(request):
     if len(query) < 2:
         return JsonResponse({"results": {"movies": [], "actors": []}})
 
-    movies = []
-    actors = []
-
-    if query:
-        clean_query = unidecode(query).lower()
-    movies = (
+    clean_query = unidecode(query).lower()
         Movie.objects.annotate(
             clean_cz=RemoveAccent(F("cz_title")),
             clean_en=RemoveAccent(F("en_title")),

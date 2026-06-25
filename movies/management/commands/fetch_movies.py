@@ -9,7 +9,7 @@ from curl_cffi import requests
 
 
 class Command(BaseCommand):
-    help = "Scrapes the top 300 movies from CSDF and fills the local database."
+    help = "Scrapes the top 300 movies from CSFD and fills the local database."
 
     BASE_URL = "https://www.csfd.cz"
 
@@ -162,9 +162,9 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING("Skipping movie with no Czech title."))
             return
 
-        # Create or get the Movie instance
         movie, _ = Movie.objects.get_or_create(
-            cz_title=cz_title, defaults={"en_title": en_title}
+            cz_title=cz_title,
+            en_title=en_title,
         )
 
         # Process actors

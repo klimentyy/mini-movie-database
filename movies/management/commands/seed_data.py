@@ -34,7 +34,9 @@ class Command(BaseCommand):
                 continue
 
             movie_obj, _ = Movie.objects.update_or_create(
-                cz_title=cz_title, defaults={"en_title": en_title}
+                cz_title=cz_title,
+                en_title=en_title,
+                defaults={},
             )
 
             actor_objects = [
