@@ -1,18 +1,30 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from .models import Movie, Actor
+from .models import Movie, Actor, Title, Country
 
 
 class MovieSearchTestCase(TestCase):
     def setUp(self):
         self.client = Client()
 
+        self.czechia, _ = Country.objects.get_or_create(name="Czechia")
+        self.usa, _ = Country.objects.get_or_create(name="USA")
+
+        # The rest of your setUp code remains exactly the same...
         self.actor_1 = Actor.objects.create(name="Karel Němec")
         self.actor_2 = Actor.objects.create(name="Keanu Reeves")
 
-        self.movie_1 = Movie.objects.create(cz_title="Pelíšky", en_title=None)
-        self.movie_2 = Movie.objects.create(cz_title="Matrix", en_title="The Matrix")
+        # 3. Create the base Movie rows
+        self.movie_1 = Movie.objects.create()
+        self.movie_2 = Movie.objects.create()
 
+        # 4. Attach titles via the new relational table
+        Title.objects.create(movie=self.movie_1, country=self.czechia, name="Pelíšky")
+        
+        Title.objects.create(movie=self.movie_2, country=self.czechia, name="Matrix")
+        Title.objects.create(movie=self.movie_2, country=self.usa, name="The Matrix")
+
+        # 5. Link relationships
         self.movie_2.actors.add(self.actor_2)
 
     def test_database_relations_work(self):
@@ -29,14 +41,11 @@ class MovieSearchTestCase(TestCase):
         self.assertTemplateUsed(response, "movies/search.html")
 
     def test_accent_insensitive_search_success(self):
-        """
-        Verifies SQLite REMOVE_ACCENTS function and the API endpoint ignore case and diacritics.
-        """
+        """Verifies SQLite REMOVE_ACCENTS function and the API endpoint ignore case and diacritics."""
         url = reverse("search_api")
 
         # Search using lowercase and NO accents for "Němec"
         response = self.client.get(url, {"q": "nem"})
-
         self.assertEqual(response.status_code, 200)
 
         actors_results = response.json()["results"]["actors"]
