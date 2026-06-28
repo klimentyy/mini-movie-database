@@ -3,7 +3,7 @@
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <title>{{ movie.cz_title }}</title>
+    <title>{{ movie.cz_title|default:"Neznámý název" }}</title>
     <link rel="stylesheet" href="{% static 'movies/css/style.css' %}">
 </head>
 <body>

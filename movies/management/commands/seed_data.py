@@ -2,7 +2,7 @@ import os
 import json
 from django.apps import apps
 from django.core.management.base import BaseCommand
-from movies.models import Actor, Movie
+from movies.models import Actor, Country, Movie, Title
 
 
 class Command(BaseCommand):
@@ -24,8 +24,12 @@ class Command(BaseCommand):
 
         with open(json_file_path, "r", encoding="utf-8") as f:
             movie_dataset = json.load(f)
-
+       
+        czechia, _ = Country.objects.get_or_create(name="Czechia")
+        usa, _ = Country.objects.get_or_create(name="USA")
         for index, movie_data in enumerate(movie_dataset, start=1):
+           # movies/management/commands/seed_data.py
+           
             cz_title = movie_data.get("cz_title")
             en_title = movie_data.get("en_title")
             actors_names = movie_data.get("actors", [])
@@ -33,15 +37,13 @@ class Command(BaseCommand):
             if not cz_title:
                 continue
 
-            movie_obj, _ = Movie.objects.update_or_create(
-                cz_title=cz_title,
-                en_title=en_title,
-                defaults={},
-            )
+            movie_obj = Movie.objects.create()
 
-            actor_objects = [
-                Actor.objects.get_or_create(name=name)[0] for name in actors_names
-            ]
+            Title.objects.create(movie=movie_obj, country=czechia, name=cz_title.strip())
+            if en_title:
+                Title.objects.create(movie=movie_obj, country=usa, name=en_title.strip())
+
+            actor_objects = [Actor.objects.get_or_create(name=name)[0] for name in actors_names]
             movie_obj.actors.set(actor_objects)
 
             self.stdout.write(
