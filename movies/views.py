@@ -2,7 +2,7 @@ from django.db.models import F, Func, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from unidecode import unidecode
-from .models import Movie, Actor
+from .models import Movie, Actor, Title
 
 
 class RemoveAccent(Func):
@@ -30,13 +30,14 @@ def search_api_view(request):
         return JsonResponse({"results": {"movies": [], "actors": []}})
 
     clean_query = unidecode(query).lower()
-    movies = (
-        Movie.objects.annotate(
-            clean_title=RemoveAccent(F("titles__name"))
-        )
-        .filter(clean_title__icontains=clean_query)
+    matching_movie_ids = (
+        Title.objects.annotate(clean_name=RemoveAccent(F("name")))
+        .filter(clean_name__icontains=clean_query)
+        .values_list("movie_id", flat=True)
         .distinct()
     )
+
+    movies = Movie.objects.filter(id__in=matching_movie_ids)
 
     serialized_movies = []
     for movie in movies:
