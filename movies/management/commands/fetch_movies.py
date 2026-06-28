@@ -4,7 +4,7 @@ from typing import Dict, Optional
 from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
 
-from movies.models import Actor, Movie
+from movies.models import Actor, Country, Movie, Title
 from curl_cffi import requests
 
 
@@ -152,26 +152,27 @@ class Command(BaseCommand):
                 break  # Stop after the first relevant "Hrají" section
         return actors_names
 
-    def _save_to_database(self, movie_data: Dict[str, Optional[str]]) -> None:
-        """Saves the parsed movie data to the database."""
+    def _save_to_database(self, movie_data: dict) -> None:
         cz_title = movie_data.get("cz_title")
         en_title = movie_data.get("en_title")
         actors_names = movie_data.get("actors", [])
 
         if not cz_title:
-            self.stdout.write(self.style.WARNING("Skipping movie with no Czech title."))
             return
 
-        movie, _ = Movie.objects.get_or_create(
-            cz_title=cz_title,
-            en_title=en_title,
-        )
+        czechia, _ = Country.objects.get_or_create(name="Czechia")
+        usa, _ = Country.objects.get_or_create(name="USA")
 
-        # Process actors
+        existing_title = Title.objects.filter(country=czechia, name=cz_title.strip()).first()
+        
+        if existing_title:
+            movie = existing_title.movie
+        else:
+            movie = Movie.objects.create()
+            Title.objects.create(movie=movie, country=czechia, name=cz_title.strip())
+            if en_title:
+                Title.objects.create(movie=movie, country=usa, name=en_title.strip())
+
         for actor_name in actors_names:
             actor, _ = Actor.objects.get_or_create(name=actor_name)
             movie.actors.add(actor)
-
-        self.stdout.write(
-            self.style.SUCCESS(f"Saved movie: {movie} with {len(actors_names)} actors.")
-        )
