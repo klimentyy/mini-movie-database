@@ -9,19 +9,22 @@ class Actor(models.Model):
 
 
 class Movie(models.Model):
-    cz_title = models.CharField(max_length=255)
-    en_title = models.CharField(max_length=255, null=True, blank=True)
     actors = models.ManyToManyField(Actor, related_name="movies")
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["cz_title", "en_title"], name="unique_movie_titles"
-            )
-        ]
+    @property
+    def cz_title(self):
+        title_obj = self.titles.filter(country__name="Czechia").first()
+        return title_obj.name if title_obj else "Neznámý název"
+
+    @property
+    def en_title(self):
+        title_obj = self.titles.filter(country__name="USA").first()
+        return title_obj.name if title_obj else None
 
     def __str__(self):
-        return self.cz_title
+            # Fallback string representation using the new relationship
+            primary_title = self.titles.first()
+            return primary_title.name if primary_title else f"Movie #{self.id}"
 
 
 class Country(models.Model):
@@ -31,7 +34,7 @@ class Country(models.Model):
         return self.name
 
 
-class Titles(models.Model):
+class Title(models.Model):
     movie = models.ForeignKey(Movie, related_name="titles", on_delete=models.CASCADE)
     country = models.ForeignKey(
         Country, related_name="titles", on_delete=models.PROTECT
