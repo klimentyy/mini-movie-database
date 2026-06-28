@@ -32,13 +32,23 @@ def search_api_view(request):
     clean_query = unidecode(query).lower()
     movies = (
         Movie.objects.annotate(
-            clean_cz=RemoveAccent(F("cz_title")),
-            clean_en=RemoveAccent(F("en_title")),
+            clean_title=RemoveAccent(F("titles__name"))
         )
-        .filter(Q(clean_cz__icontains=clean_query) | Q(clean_en__icontains=clean_query))
+        .filter(clean_title__icontains=clean_query)
         .distinct()
-        .values("id", "cz_title", "en_title")
     )
+
+    serialized_movies = []
+    for movie in movies:
+        cz_title = movie.titles.filter(country__name="Czechia").first()
+        en_title = movie.titles.filter(country__name="USA").first()
+        
+        serialized_movies.append({
+            "id": movie.id,
+            "cz_title": cz_title.name,
+            "en_title": en_title.name
+        })
+    
     actors = (
         Actor.objects.annotate(normalized_name=RemoveAccent(F("name")))
         .filter(normalized_name__icontains=clean_query)
@@ -49,7 +59,7 @@ def search_api_view(request):
     return JsonResponse(
         {
             "results": {
-                "movies": list(movies),
+                "movies": serialized_movies,
                 "actors": list(actors),
             }
         }
