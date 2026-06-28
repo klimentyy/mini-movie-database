@@ -14,7 +14,7 @@ class Movie(models.Model):
     @property
     def cz_title(self):
         title_obj = self.titles.filter(country__name="Czechia").first()
-        return title_obj.name if title_obj else "Neznámý název"
+        return title_obj.name if title_obj else None
 
     @property
     def en_title(self):

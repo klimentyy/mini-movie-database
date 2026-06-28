@@ -40,13 +40,10 @@ def search_api_view(request):
 
     serialized_movies = []
     for movie in movies:
-        cz_title = movie.titles.filter(country__name="Czechia").first()
-        en_title = movie.titles.filter(country__name="USA").first()
-        
         serialized_movies.append({
             "id": movie.id,
-            "cz_title": cz_title.name,
-            "en_title": en_title.name
+            "cz_title": movie.cz_title,
+            "en_title": movie.en_title
         })
     
     actors = (
